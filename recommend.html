@@ -1,0 +1,114 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Recommendation System</title>
+  <link rel="stylesheet" href="recommend.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Movie Recommendation System</h1>
+
+    <div class="form-container">
+      <label for="industry">Select Movie Industry:</label>
+      <select id="industry">
+        <option value="">Select Industry</option>
+        <option value="hollywood">Hollywood</option>
+        <option value="bollywood">Bollywood</option>
+        <option value="tollywood">Tollywood/South Indian</option>
+      </select>
+
+      <label for="mood">Select your mood:</label>
+      <select id="mood">
+        <option value="">Select Mood</option>
+        <option value="happy">Happy</option>
+        <option value="sad">Sad</option>
+        <option value="excited">Excited</option>
+        <option value="relaxed">Relaxed</option>
+      </select>
+
+      <label for="genre">Select a genre:</label>
+      <select id="genre">
+        <option value="">Select Genre</option>
+        <option value="28">Action</option>
+        <option value="35">Comedy</option>
+        <option value="18">Drama</option>
+        <option value="27">Horror</option>
+      </select>
+
+      <button id="recommendBtn">Get Recommendations</button>
+    </div>
+
+    <div id="moviesContainer" class="movies-container">
+    
+    </div>
+  </div>
+
+  <script src="recommend.js"></script>
+</body>
+</html> -->
+<!-- new file -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Recommendation System</title>
+  <link rel="stylesheet" href="recommend.css">
+</head>
+<body>
+  <div class="container">
+    <h1 id="welcomeMessage"></h1> <!-- The welcome message will be displayed here -->
+
+    <div class="form-container">
+      <label for="industry">Select Movie Industry:</label>
+      <select id="industry">
+        <option value="">Select Industry</option>
+        <option value="hollywood">Hollywood</option>
+        <option value="bollywood">Bollywood</option>
+        <option value="tollywood">Tollywood/South Indian</option>
+      </select>
+
+      <label for="mood">Select your mood:</label>
+      <select id="mood">
+        <option value="">Select Mood</option>
+        <option value="happy">Happy</option>
+        <option value="sad">Sad</option>
+        <option value="excited">Excited</option>
+        <option value="relaxed">Relaxed</option>
+      </select>
+
+      <label for="genre">Select a genre:</label>
+      <select id="genre">
+        <option value="">Select Genre</option>
+        <option value="28">Action</option>
+        <option value="35">Comedy</option>
+        <option value="18">Drama</option>
+        <option value="27">Horror</option>
+      </select>
+      <button id="recommendBtn">Get Recommendations</button>
+    </div>
+
+    <div id="moviesContainer" class="movies-container">
+      <!-- Movie recommendations will appear here -->
+    </div>
+  </div>
+
+  <script>
+    // Get the username from localStorage
+    const username = localStorage.getItem('username');
+    
+    // Display the welcome message
+    if (username) {
+      document.getElementById('welcomeMessage').innerText = `Hi, ${username}! Select the options below`;
+    } else {
+      document.getElementById('welcomeMessage').innerText = 'Hi! Select the options below';
+    }
+  </script>
+
+  <script src="recommend.js"></script>
+</body>
+</html>

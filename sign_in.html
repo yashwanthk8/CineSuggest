@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sign In</title>
+        <link rel="stylesheet" href="sign_in.css">
+    </head>
+    
+<body>
+    <!-- <form id="signin-form">
+        <h1>Sign in</h1>
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <button type="submit">Sign In</button>
+    </form> -->
+    
+    <div class="form-wrapper">
+        <h1>Sign In</h1>
+        <form id="signin-form">
+          <div class="form-item">
+            <label for="email"></label>
+            <input type="email" name="email" required="required" placeholder="Email Address"></input>
+          </div>
+          <div class="form-item">
+            <label for="password"></label>
+            <input type="password" name="password" required="required" placeholder="Password"></input>
+          </div>
+          <div class="button-panel">
+            <input type="submit" class="button" title="Sign In" value="Sign In"></input>
+          </div>
+        </form>
+        <div class="form-footer">
+          <p><a href="sign_up.html">Create an account</a></p>
+        </div>
+      </div>
+    
+    <script>
+        const form = document.querySelector('#signin-form');
+    
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+    
+            // Fetch the input values
+            const email = form.querySelector('input[name="email"]').value;
+            const password = form.querySelector('input[name="password"]').value;
+    
+            try {
+                const response = await fetch('http://localhost:5001/api/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+                });
+    
+                const data = await response.json();
+                if (response.ok) {
+                    // Directly navigate to the desired page after sign-in
+                    window.location.href = 'recommend.html'; // Replace with your page
+                } else {
+                    alert(data.error); // Optionally handle error
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+    
+</body>
+</html>
