@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="sign_in.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>Sign Up</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- <form id="signup-form">
@@ -50,53 +51,63 @@
     
 
     <script>
-       const form = document.querySelector('#signup-form'); // Select the form using its ID
+        // Initialize Supabase client
+        const supabaseUrl = 'https://tgfanudcrbzjmgcsevps.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmFudWRjcmJ6am1nY3NldnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzNjY4MDcsImV4cCI6MjA1OTk0MjgwN30.Nhp02Kx2ARzYdUh-zjoDND_HjF4q_AvvVpYuu5v07H8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// Get base API URL depending on environment
-const getApiUrl = () => {
-    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-        ? 'http://localhost:5001/api' 
-        : '/api';
-};
+        const form = document.querySelector('#signup-form');
 
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    // Retrieve the input field values correctly using the 'name' attributes
-    const name = form.querySelector('input[name="name"]').value;
-    const email = form.querySelector('input[name="email"]').value;
-    const password = form.querySelector('input[name="password"]').value;
+            // Retrieve the input field values
+            const name = form.querySelector('input[name="name"]').value;
+            const email = form.querySelector('input[name="email"]').value;
+            const password = form.querySelector('input[name="password"]').value;
 
-    try {
-        const response = await fetch(`${getApiUrl()}/signup`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name,
-                email,
-                password
-            })
+            try {
+                // Register user directly with Supabase
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: { name }
+                    }
+                });
+
+                if (error) {
+                    alert(error.message);
+                } else {
+                    alert('User registered successfully. Check your email for confirmation.');
+                    // Redirect to sign-in page after successful registration
+                    window.location.href = 'sign_in.html';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred during registration.');
+            }
         });
 
-        const data = await response.json();
-        if (response.ok) {
-            alert(data.message);
-            // Redirect to sign-in page after successful registration
-            window.location.href = 'sign_in.html';
-        } else {
-            alert(data.error);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-});
+        // Google Sign Up
+        document.getElementById('google-signup').addEventListener('click', async () => {
+            try {
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/after.html'
+                    }
+                });
 
-// Google Sign Up
-document.getElementById('google-signup').addEventListener('click', () => {
-    window.location.href = `${getApiUrl()}/auth/google`;
-});
+                if (error) {
+                    alert(error.message);
+                }
+                // The redirect happens automatically
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred with Google sign-up.');
+            }
+        });
     </script>
 </body>
 </html>

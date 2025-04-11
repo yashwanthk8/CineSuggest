@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Configure CORS to allow requests from your frontend
 app.use(cors({
-    origin: ['http://127.0.0.1:3000', 'http://localhost:5001'], // Your frontend URLs
+    origin: ['http://127.0.0.1:3000', 'http://localhost:5001', 'https://moviesugst.netlify.app/'], // Your frontend URLs
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));

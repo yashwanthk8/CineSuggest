@@ -6,6 +6,7 @@
         <title>Sign In</title>
         <link rel="stylesheet" href="sign_in.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     </head>
     
 <body>
@@ -45,14 +46,12 @@
       </div>
     
     <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://tgfanudcrbzjmgcsevps.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmFudWRjcmJ6am1nY3NldnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzNjY4MDcsImV4cCI6MjA1OTk0MjgwN30.Nhp02Kx2ARzYdUh-zjoDND_HjF4q_AvvVpYuu5v07H8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         const form = document.querySelector('#signin-form');
-        
-        // Get base API URL depending on environment
-        const getApiUrl = () => {
-            return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                ? 'http://localhost:5001/api' 
-                : '/api';
-        };
     
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -62,36 +61,53 @@
             const password = form.querySelector('input[name="password"]').value;
     
             try {
-                const response = await fetch(`${getApiUrl()}/signin`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password
-                    })
+                // Sign in with Supabase directly
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
                 });
     
-                const data = await response.json();
-                if (response.ok) {
-                    // Store token and user name in localStorage
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('username', data.name);
+                if (error) {
+                    alert(error.message);
+                } else {
+                    // Store user data in localStorage
+                    localStorage.setItem('token', data.session.access_token);
+                    
+                    // Try to get user name from metadata
+                    if (data.user.user_metadata && data.user.user_metadata.name) {
+                        localStorage.setItem('username', data.user.user_metadata.name);
+                    } else {
+                        // Fall back to email prefix
+                        localStorage.setItem('username', email.split('@')[0]);
+                    }
                     
                     // Directly navigate to the desired page after sign-in
                     window.location.href = 'recommend.html'; 
-                } else {
-                    alert(data.error); // Optionally handle error
                 }
             } catch (error) {
                 console.error('Error:', error);
+                alert('An error occurred during sign in.');
             }
         });
         
         // Google Sign In
-        document.getElementById('google-signin').addEventListener('click', () => {
-            window.location.href = `${getApiUrl()}/auth/google`;
+        document.getElementById('google-signin').addEventListener('click', async () => {
+            try {
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/after.html'
+                    }
+                });
+
+                if (error) {
+                    alert(error.message);
+                }
+                // The redirect happens automatically
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred with Google sign-in.');
+            }
         });
     </script>
     

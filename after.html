@@ -4,56 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Authentication Success</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <h1>Authentication Successful!</h1>
     <p>Redirecting to your dashboard...</p>
 
     <script>
-        // Get base API URL depending on environment
-        const getApiUrl = () => {
-            return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                ? 'http://localhost:5001/api' 
-                : '/api';
-        };
+        // Initialize Supabase client
+        const supabaseUrl = 'https://tgfanudcrbzjmgcsevps.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmFudWRjcmJ6am1nY3NldnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzNjY4MDcsImV4cCI6MjA1OTk0MjgwN30.Nhp02Kx2ARzYdUh-zjoDND_HjF4q_AvvVpYuu5v07H8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
         
-        // Get Supabase session info
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        
-        if (accessToken) {
-            // Store token
-            localStorage.setItem('token', accessToken);
-            
-            // Get user info
-            fetch(`${getApiUrl()}/protected`, {
-                headers: {
-                    'Authorization': accessToken
+        // Get session from URL
+        async function handleAuthCallback() {
+            try {
+                // Get session from Supabase
+                const { data, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    console.error('Error getting session:', error);
+                    return;
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Extract and store username from email if available
-                if (data.email) {
-                    localStorage.setItem('username', data.email.split('@')[0]);
+                
+                if (data && data.session) {
+                    // Store token
+                    localStorage.setItem('token', data.session.access_token);
+                    
+                    // Get user data
+                    const { data: userData } = await supabase.auth.getUser();
+                    
+                    if (userData && userData.user) {
+                        // Set username from metadata or email
+                        if (userData.user.user_metadata && userData.user.user_metadata.name) {
+                            localStorage.setItem('username', userData.user.user_metadata.name);
+                        } else if (userData.user.user_metadata && userData.user.user_metadata.full_name) {
+                            localStorage.setItem('username', userData.user.user_metadata.full_name);
+                        } else if (userData.user.email) {
+                            localStorage.setItem('username', userData.user.email.split('@')[0]);
+                        }
+                    }
                 }
                 
                 // Redirect to recommendation page
                 window.location.href = 'recommend.html';
-            })
-            .catch(error => {
-                console.error('Error fetching user data:', error);
-                window.location.href = 'recommend.html';
-            });
-        } else {
-            // Default redirect if no token
-            window.location.href = 'recommend.html';
+            } catch (error) {
+                console.error('Error in auth callback:', error);
+            }
         }
         
-        // If for some reason the fetch doesn't complete, redirect after 3 seconds
+        // Call the handler
+        handleAuthCallback();
+        
+        // Fallback redirect if something goes wrong
         setTimeout(() => {
             window.location.href = 'recommend.html';
-        }, 3000);
+        }, 5000);
     </script>
 </body>
 </html>
