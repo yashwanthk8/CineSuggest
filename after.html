@@ -1,12 +1,59 @@
 <!DOCTYPE html>
-<html>
-    <head>
-    
-    </head>
-    <body>
-        <h2>Hi Welcome To My Website</h2>
-    </body>
-    
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Success</title>
+</head>
+<body>
+    <h1>Authentication Successful!</h1>
+    <p>Redirecting to your dashboard...</p>
 
-
+    <script>
+        // Get base API URL depending on environment
+        const getApiUrl = () => {
+            return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://localhost:5001/api' 
+                : '/api';
+        };
+        
+        // Get Supabase session info
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        
+        if (accessToken) {
+            // Store token
+            localStorage.setItem('token', accessToken);
+            
+            // Get user info
+            fetch(`${getApiUrl()}/protected`, {
+                headers: {
+                    'Authorization': accessToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Extract and store username from email if available
+                if (data.email) {
+                    localStorage.setItem('username', data.email.split('@')[0]);
+                }
+                
+                // Redirect to recommendation page
+                window.location.href = 'recommend.html';
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+                window.location.href = 'recommend.html';
+            });
+        } else {
+            // Default redirect if no token
+            window.location.href = 'recommend.html';
+        }
+        
+        // If for some reason the fetch doesn't complete, redirect after 3 seconds
+        setTimeout(() => {
+            window.location.href = 'recommend.html';
+        }, 3000);
+    </script>
+</body>
 </html>

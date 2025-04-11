@@ -95,3 +95,54 @@ form {
 .form-footer a:hover {
   border-bottom: 1px dotted #8c8c8c;
 }
+
+/* Google sign-in button */
+.social-signin {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.google-button {
+  background-color: #ffffff;
+  color: #757575;
+  padding: 10px 15px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  justify-content: center;
+}
+
+.google-button:hover {
+  background-color: #f1f3f4;
+}
+
+.google-button .fab {
+  margin-right: 10px;
+  color: #4285F4;
+  font-size: 18px;
+}
+
+/* Separator between email/password and social login */
+.social-signin::before {
+  content: "OR";
+  display: block;
+  color: #999;
+  margin-bottom: 15px;
+  position: relative;
+  text-align: center;
+}
+
+.social-signin::after {
+  content: "";
+  display: block;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+  top: -10px;
+  z-index: -1;
+}

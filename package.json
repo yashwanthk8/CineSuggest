@@ -1,19 +1,21 @@
 {
   "name": "website",
   "version": "1.0.0",
-  "main": "login.js",
+  "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "netlify dev",
+    "build": "# No build step required"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Movie recommendation website with Supabase authentication",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
+    "@supabase/supabase-js": "^2.39.8",
     "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.6.2"
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.38.1"
   }
 }

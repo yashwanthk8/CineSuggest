@@ -1,9 +1,7 @@
-// new code server.js
+// server.js with Supabase integration
 const express = require('express');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const { createClient } = require('@supabase/supabase-js');
 
 // Initialize express app
 const app = express();
@@ -11,79 +9,104 @@ app.use(express.json());
 
 // Configure CORS to allow requests from your frontend
 app.use(cors({
-    origin: 'http://127.0.0.1:3000', // Your frontend URL
+    origin: ['http://127.0.0.1:3000', 'http://localhost:5001'], // Your frontend URLs
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Secret key for JWT
-const JWT_SECRET = 'your_secret_key'; // Change this to a more secure key
-
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/userdb', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log("MongoDB Connection Failed", err));
-
-// User schema
-const UserSchema = new mongoose.Schema({
-    name: String,
-    email: { type: String, unique: true },
-    password: String
-});
-
-const User = mongoose.model('User', UserSchema);
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL || 'https://tgfanudcrbzjmgcsevps.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmFudWRjcmJ6am1nY3NldnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzNjY4MDcsImV4cCI6MjA1OTk0MjgwN30.Nhp02Kx2ARzYdUh-zjoDND_HjF4q_AvvVpYuu5v07H8';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Sign-up route
 app.post('/api/signup', async (req, res) => {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-        return res.status(400).json({ error: 'User already exists' });
+    try {
+        // Register user with Supabase
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    name,
+                }
+            }
+        });
+
+        if (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        // User created successfully
+        res.status(201).json({
+            message: 'User registered successfully. Check your email for confirmation.',
+            userId: data.user.id
+        });
+    } catch (err) {
+        console.error('Server error:', err);
+        res.status(500).json({ error: 'Server error' });
     }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Save the new user
-    const newUser = new User({
-        name,
-        email,
-        password: hashedPassword
-    });
-
-    await newUser.save();
-    res.status(201).json({ message: 'User registered successfully' });
 });
 
 // Sign-in route
 app.post('/api/signin', async (req, res) => {
     const { email, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-        return res.status(400).json({ error: 'User not found' });
+    try {
+        // Sign in with Supabase
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        // Return token and user's name
+        res.json({
+            message: 'User signed in successfully',
+            token: data.session.access_token,
+            name: data.user.user_metadata.name || email.split('@')[0]
+        });
+    } catch (err) {
+        console.error('Server error:', err);
+        res.status(500).json({ error: 'Server error' });
     }
-
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return res.status(400).json({ error: 'Invalid password' });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
-
-    // Return token and user's name
-    res.json({ message: 'User signed in successfully', token, name: user.name });
 });
 
-// Protected route to verify JWT token (optional, for API protection)
-app.get('/api/protected', (req, res) => {
+// Google sign-in route
+app.get('/api/auth/google', async (req, res) => {
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: 'http://localhost:5001/api/auth/callback'
+            }
+        });
+
+        if (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        // Redirect to the Supabase OAuth URL
+        res.redirect(data.url);
+    } catch (err) {
+        console.error('Server error:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// OAuth callback handler
+app.get('/api/auth/callback', async (req, res) => {
+    // Redirects to frontend with session info
+    res.redirect('http://localhost:5001/after.html');
+});
+
+// Protected route to verify JWT token
+app.get('/api/protected', async (req, res) => {
     const token = req.headers['authorization'];
 
     if (!token) {
@@ -91,8 +114,14 @@ app.get('/api/protected', (req, res) => {
     }
 
     try {
-        const verified = jwt.verify(token, JWT_SECRET);
-        res.json({ message: 'Access granted', userId: verified.userId });
+        // Verify with Supabase
+        const { data, error } = await supabase.auth.getUser(token);
+        
+        if (error) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+        
+        res.json({ message: 'Access granted', userId: data.user.id });
     } catch (err) {
         res.status(401).json({ error: 'Invalid token' });
     }

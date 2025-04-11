@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Sign In</title>
         <link rel="stylesheet" href="sign_in.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     </head>
     
 <body>
@@ -30,6 +31,14 @@
             <input type="submit" class="button" title="Sign In" value="Sign In"></input>
           </div>
         </form>
+        
+        <!-- Google Sign-In Button -->
+        <div class="social-signin">
+          <button id="google-signin" class="google-button">
+            <i class="fab fa-google"></i> Sign in with Google
+          </button>
+        </div>
+        
         <div class="form-footer">
           <p><a href="sign_up.html">Create an account</a></p>
         </div>
@@ -37,6 +46,13 @@
     
     <script>
         const form = document.querySelector('#signin-form');
+        
+        // Get base API URL depending on environment
+        const getApiUrl = () => {
+            return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://localhost:5001/api' 
+                : '/api';
+        };
     
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -46,7 +62,7 @@
             const password = form.querySelector('input[name="password"]').value;
     
             try {
-                const response = await fetch('http://localhost:5001/api/signin', {
+                const response = await fetch(`${getApiUrl()}/signin`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -59,14 +75,23 @@
     
                 const data = await response.json();
                 if (response.ok) {
+                    // Store token and user name in localStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('username', data.name);
+                    
                     // Directly navigate to the desired page after sign-in
-                    window.location.href = 'recommend.html'; // Replace with your page
+                    window.location.href = 'recommend.html'; 
                 } else {
                     alert(data.error); // Optionally handle error
                 }
             } catch (error) {
                 console.error('Error:', error);
             }
+        });
+        
+        // Google Sign In
+        document.getElementById('google-signin').addEventListener('click', () => {
+            window.location.href = `${getApiUrl()}/auth/google`;
         });
     </script>
     
